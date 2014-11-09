@@ -23,8 +23,25 @@ I basically copied exactly what the lab did, and the result is in scraper.py. Th
 	* If interested in the attribute value, simply use `element.attributeName` to see what's in there. 
 	* Use `element.HTML` or `element.content` to see the values.
 
+I got the scraper working for the first page, which are only 50 records. If order to store all the data, I will need to loop through and change the start parameter in the url.
 
+###### More resources for scraping using Python
 
+* [Web scraping 101 with Python]
+* [More web scraping with Python]
+* [Y combinator's response and comparison on scraping packages]
+* Libraries:
+	* [Requests]
+	* [Mechanize]
+	* [lxml]
 
 [lab 4]:http://nbviewer.ipython.org/github/cs109/content/blob/master/lec_04_scraping.ipynb
+[lab 4 munging]: http://nbviewer.ipython.org/github/cs109/content/blob/master/lec_04_wrangling.ipynb
 [Executing python script in sublime]: http://stackoverflow.com/questions/8551735/how-do-i-run-python-code-from-sublime-text-2
+[Greg Reda]: http://www.gregreda.com/
+[Web scraping 101 with Python]: http://www.gregreda.com/2013/03/03/web-scraping-101-with-python/
+[More web scraping with Python]: http://www.gregreda.com/2013/05/06/more-web-scraping-with-python/
+[Y combinator's response and comparison on scraping packages]: https://news.ycombinator.com/item?id=5353347
+[Requests]: http://docs.python-requests.org/en/latest/
+[Mechanize]: http://wwwsearch.sourceforge.net/mechanize/
+[lxml]: http://lxml.de/
