@@ -18,8 +18,8 @@ print r.url
 # r = requests.get(base_url, params = params)
 # print r.url
 
-def extract_dom(at, url = 'http://www.imdb.com/search/title'):
-	params = dict(sort = 'num_votes', at = 0, title_type = 'feature', year = '1950,2014')
+def extract_dom(start, url = 'http://www.imdb.com/search/title'):
+	params = dict(sort = 'num_votes', at = 0, start = start, title_type = 'feature', year = '1950,2014')
 	r = requests.get(url, params = params)
 	print r.url
 	return web.Element(r.text)
@@ -36,7 +36,8 @@ def extract_num_votes(div):
 	num_votes = num_votes_str[start_idx + 1 : end_idx]
 	return int(num_votes.strip('votes ').replace(',', ''))
 
-for at in range(NUMBER_PAGES_BY_VOTES + 1):
+# For some reason, IMDB doesn't return results > 100,000, so I am arbitrarily setting it to 50,000 for now
+for at in range(1, 50000, NUMBER_MOVIES_PER_PAGE):
 	print "Currenting processing page number: " + str(at) + "..."
 	dom = extract_dom(at, base_url)
 
