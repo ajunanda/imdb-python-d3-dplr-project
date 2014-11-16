@@ -1,0 +1,109 @@
+---
+title: "IMD dplyr Data Munging Exercise"
+author: "Robert Chang"
+date: "November 15, 2014"
+output: html_document
+---
+
+As part of the IMBD project using Python:R:d3.js stack, this section is devoted to practicing **dplyr** package in R. I recently read through a very helpful [documentation](http://rstudio-pubs-static.s3.amazonaws.com/11068_8bc42d6df61341b2bed45e9a9a3bf9f4.html), but never get a chance to play with it. The goal is practice this tool so I can be proficient and use it on my job. No more ugly referencing like `df[df$col1 = ]$col2`.
+
+### STEP 1: Load Data
+Let's load dplyr first. The two dataset that we will be playing with are named `movie_data_basic.csv` and `movie_data_more.csv`. We can `ls` our current working directory by either `dir()` or `list.files()`. `dir()` is arguably less verbose.
+
+```{r}
+setwd("~/Desktop/imdb_project/")
+library(dplyr)
+#library(plyr)
+dir()
+list.files()
+```
+
+Ok, let's now load the data using the usual read.csv functiion (I didn't use read.table because read.csv usually works better with specific delimiters).
+
+```{r}
+df.basic = read.csv(file = "movie_data_basic.csv", sep = ",", header = FALSE)
+colnames(df.basic) = c("name", "year", "genre", "runtime", "rating", "num_votes")
+df.more = read.csv(file = "movie_data_more.csv", sep = ",", header = FALSE)
+colnames(df.more) = c("name", "revenue", "director", "actor1", "actor2", "actor3", "rated")
+
+head(df.basic, 5)
+head(df.more, 5)
+```
+
+### STEP 2: Data Join
+
+The reason that we have two separate dataset is because I wasn't able to find a page that contains ratings & revenue on the same url, so I had to break it up. I thought this is fine, because it demonstrated real world data munging. Here, we can see that we will probably use the `name` column as our unique identifier for each row. Before that though, let's do some basic analysis around these datasets. According to [Hadley's github page](https://github.com/hadley/dplyr), there are different joins that were implemented. In our case, we probably want to inner join df.basic and df.more using name. Let's do that, but let's lower case the movie names just to be sure.
+
+```{r}
+df.basic$name = tolower(df.basic$name)
+df.more$name = tolower(df.more$name)
+df.joined = inner_join(df.basic, df.more)
+dim(df.joined)
+head(df.joined)
+```
+
+We can see that there are 3373 records that can be joined by names, not bad for just 5000 records for each dataset. Notice, we actually grab the original dataset by two URL request, one sorted by number of votes, and one by revenue. There are a lot of good questions we might want to ask, but the way we scrape the data might inherently biased the analysis. This demonstrates how easy we can lie with (or get lied by) statistics.
+
+#### This thing call tbl_df
+
+dplyr can work with data frames as is, but if you're dealing with large data, it's worthwhile to convert them to a tbl_df: this is a wrapper around a data frame that won't accidentally print a lot of data to the screen. So let's do that
+
+```{r}
+df = tbl_df(df.joined)
+df
+```
+
+It has some advantages and disadvantages. It will reformat the df nicely and it shows you basic information on the type of each column. However, it might choose to hide some of the columns for formatting purposes. 
+
+### STEP 3: Basic Exploratory Analysis
+
+There are probably several interesting questions that we can ask from df.basic. For example:
+
+* Is there a particular genre that tends to get higher ratings, votes, or revenue?
+* Is there a particular year where movies are doing great in terms of revenue?
+* Is there a particular director or movie star that tend to have great hits?
+* How is the certificate of a movie affects how many votes it gets?
+
+#### Is there a particular genre that is super popular?
+
+As a warmup, let's first see of the 3373 records, how many of them are in each genre.
+
+```{r}
+#aggregate(genre ~. , data = df, length)
+#df.by.genre = ddply(df, .(genre), summarise, cnt = length(genre))
+#df.by.genre
+```
+
+We can probably do better with dplyr
+
+```{r}
+df_grp = group_by(df, genre)
+df_stats = summarise(df_grp, count = n())
+```
+
+which can be written, in conjunction with `%>%` syntax
+
+```{r}
+df %>% group_by(genre) %>% summarise(cnt = n())
+```
+
+Ok, back to our original question, is there a particular genre that is super popular, let's measure that by avg ratings, avg revnue, and avg number of votes.
+
+```{r}
+df %>% 
+   group_by(genre) %>% 
+   summarise(cnt = n(),
+                 avg_rating = mean(rating),
+                 avg_revenue = mean(revenue),
+                 avg_votes = mean(num_votes)) %>%
+  arrange(desc(avg_votes))
+```
+
+(For multi-line code execution, you need to put the operand in the very end). When we look by revenue, it seems like `Sci-Fi` category get the most revenue. In terms of votes and ratings, the highest avg vote/rating genre is `Western`, but notice we only have 4 movies in that category, so this is probably noise than signal. What are these movies, let's see:
+
+```{r}
+df %>%
+  filter(genre == 'Western')
+```
+
+Clint Eastwood must be happy! and most of the movies are relatively old, except django unchained.
