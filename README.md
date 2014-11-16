@@ -25,6 +25,13 @@ I basically copied exactly what the lab did, and the result is in scraper.py. Th
 
 I got the scraper working for the first page, which are only 50 records. If order to store all the data, I will need to loop through and change the start parameter in the url.
 
+A couple of lessons I learned along the way:
+
+* How to print Python STDOUT in different colors! very handy for debugging
+* In web scraping, Google developer tool is super useful. Protip: use the "magnifying class" on the top left and hover over a DOM element, it will show you the element in the HTML code directly!
+* When you need to replace multiple characters in a string, use re library, in particular, the re.sub('!^&%', yourString) function
+* How to write to csv in Python
+
 ###### More resources for scraping using Python
 
 * [Web scraping 101 with Python]
