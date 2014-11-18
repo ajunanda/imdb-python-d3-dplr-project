@@ -1,11 +1,11 @@
 ---
-title: "IMD dplyr Data Munging Exercise"
+title: "IMDB dplyr Data Munging Exercise"
 author: "Robert Chang"
 date: "November 15, 2014"
 output: html_document
 ---
 
-As part of the IMBD project using Python:R:d3.js stack, this section is devoted to practicing **dplyr** package in R. I recently read through a very helpful [documentation](http://rstudio-pubs-static.s3.amazonaws.com/11068_8bc42d6df61341b2bed45e9a9a3bf9f4.html), but never get a chance to play with it. The goal is practice this tool so I can be proficient and use it on my job. No more ugly referencing like `df[df$col1 = ]$col2`.
+In pursuing IMBD project using the Python:R:d3.js stack, this section is devoted to practicing **dplyr** in R. I recently encountered a very helpful [dplyr documentation](http://rstudio-pubs-static.s3.amazonaws.com/11068_8bc42d6df61341b2bed45e9a9a3bf9f4.html), but never gotten a chance to play with it. The goal of this Rmarkdown document is learn by doing. Hopefully, by the end of the this document, there is no more ugly referencing like `df[df$col1 = ]$col2` in my R code.
 
 ### STEP 1: Load Data
 Let's load dplyr first. The two dataset that we will be playing with are named `movie_data_basic.csv` and `movie_data_more.csv`. We can `ls` our current working directory by either `dir()` or `list.files()`. `dir()` is arguably less verbose.
@@ -14,8 +14,8 @@ Let's load dplyr first. The two dataset that we will be playing with are named `
 setwd("~/Desktop/imdb_project/")
 library(dplyr)
 #library(plyr)
+#list.files()
 dir()
-list.files()
 ```
 
 Ok, let's now load the data using the usual read.csv functiion (I didn't use read.table because read.csv usually works better with specific delimiters).
@@ -32,7 +32,7 @@ head(df.more, 5)
 
 ### STEP 2: Data Join
 
-The reason that we have two separate dataset is because I wasn't able to find a page that contains ratings & revenue on the same url, so I had to break it up. I thought this is fine, because it demonstrated real world data munging. Here, we can see that we will probably use the `name` column as our unique identifier for each row. Before that though, let's do some basic analysis around these datasets. According to [Hadley's github page](https://github.com/hadley/dplyr), there are different joins that were implemented. In our case, we probably want to inner join df.basic and df.more using name. Let's do that, but let's lower case the movie names just to be sure.
+The reason that I have two separate dataset is because I wasn't able to find a page that contains ratings & revenue in the same url, and I had to scrape the data twice via two different ulrs. This demonstrates real world data munging, or my lack of python data scraping for that matter. Anyway, we can see that we will probably use the `name` column as the unique identifier for each row. According to [Hadley's github page](https://github.com/hadley/dplyr), different joins have been implemented in dplyr. In our case, let us just inner join df.basic and df.more using name, and here is the result:
 
 ```{r}
 df.basic$name = tolower(df.basic$name)
@@ -42,11 +42,13 @@ dim(df.joined)
 head(df.joined)
 ```
 
-We can see that there are 3373 records that can be joined by names, not bad for just 5000 records for each dataset. Notice, we actually grab the original dataset by two URL request, one sorted by number of votes, and one by revenue. There are a lot of good questions we might want to ask, but the way we scrape the data might inherently biased the analysis. This demonstrates how easy we can lie with (or get lied by) statistics.
+For consistency, notice that we lower the movie names before we do the join. From `dim`, we see that there are 3373 records in the joined dataset. Here is point worth mentioning -- we actually grabbed the original datasets by two URL requests: one sorted by number of votes, and one by revenue. Although there might be a lot of good questions we can ask, the implicit sorting of the movies (due to scraping) might inadvertently biased our analysis.
+
+For example, our analysis might biased toward those that have large revenues and high votes, so any observations based on averaging might be biased toward more popular movies.
 
 #### This thing call tbl_df
 
-dplyr can work with data frames as is, but if you're dealing with large data, it's worthwhile to convert them to a tbl_df: this is a wrapper around a data frame that won't accidentally print a lot of data to the screen. So let's do that
+dplyr can work with data frames as is, but if you're dealing with large data, it's worthwhile to convert them to a tbl_df: this is a wrapper around a data frame that won't accidentally print a lot of data to the screen. Here is an illustration:
 
 ```{r}
 df = tbl_df(df.joined)
@@ -66,28 +68,31 @@ There are probably several interesting questions that we can ask from df.basic. 
 
 #### Is there a particular genre that is super popular?
 
-As a warmup, let's first see of the 3373 records, how many of them are in each genre.
+As a warmup, let's first investigate, of the 3373 records, how many of them are in each genre. Typically, I would just use the `ddply` in `plyr`:
 
 ```{r}
-#aggregate(genre ~. , data = df, length)
 #df.by.genre = ddply(df, .(genre), summarise, cnt = length(genre))
+#df.by.genre = df.by.genre[order(df.by.genre$cnt),]
 #df.by.genre
 ```
 
-We can probably do better with dplyr
+But I think we can do better with dplyr:
 
 ```{r}
 df_grp = group_by(df, genre)
-df_stats = summarise(df_grp, count = n())
+df_stats = summarise(df_grp, cnt = n())
+df_ordered_stats = arrange(df_stats, desc(cnt))
 ```
 
-which can be written, in conjunction with `%>%` syntax
+We can further simplify the above statement, since the power of `dplyr` lies within the `%>%` symbol:
 
 ```{r}
-df %>% group_by(genre) %>% summarise(cnt = n())
+df %>% group_by(genre) %>% summarise(cnt = n()) %>% arrange(desc(cnt))
 ```
 
-Ok, back to our original question, is there a particular genre that is super popular, let's measure that by avg ratings, avg revnue, and avg number of votes.
+This is our first `dplyr` statement, look how succinct it is, and I hope you can appreciate how chaining operation made all the data manipulation fit together so nicely. We don't have do the ugly `length(genre)` anymore, as `n()` replace it. We also didn't have to re-`order` the rows, as `arrange(desc(cnt))` took care of it. The `%>%` got rid of all the intermediate dataset names, so everything is done in one shot.
+
+Ok, back to our original question, is there a particular genre that is super popular, let's answer this question by calculating the avg ratings, avg revnue, and avg number of votes for each genre.
 
 ```{r}
 df %>% 
@@ -96,14 +101,57 @@ df %>%
                  avg_rating = mean(rating),
                  avg_revenue = mean(revenue),
                  avg_votes = mean(num_votes)) %>%
-  arrange(desc(avg_votes))
+  arrange(desc(avg_revenue))
 ```
 
-(For multi-line code execution, you need to put the operand in the very end). When we look by revenue, it seems like `Sci-Fi` category get the most revenue. In terms of votes and ratings, the highest avg vote/rating genre is `Western`, but notice we only have 4 movies in that category, so this is probably noise than signal. What are these movies, let's see:
+When running a code block, you need to put the pipe operand toward the end of each line, so R knows to continue its evaluation. Back to the investigation, it seems like `Sci-Fi` category get the most revenue. In terms of votes and ratings, the highest avg vote/rating genre is `Western`, but notice we only have 4 movies in that category, so this is probably more noise than an actual signal. I am curious what those 4 movies are, so let's look them up with `filter`:
+
+```{r}
+df %>% filter(genre == 'Western')
+```
+
+Clint Eastwood must be happy! and most of the movies are relatively old, except django unchained. Let's improve this analysis by taking averages only when the genre has more than 100 records/movies:
 
 ```{r}
 df %>%
-  filter(genre == 'Western')
+   group_by(genre) %>% 
+   summarise(cnt = n(),
+                 avg_rating = mean(rating),
+                 avg_revenue = mean(revenue),
+                 avg_votes = mean(num_votes)) %>%
+  filter(genre != 'Western', cnt >= 100) %>%
+  arrange(desc(avg_votes))
 ```
 
-Clint Eastwood must be happy! and most of the movies are relatively old, except django unchained.
+With the new analysis, we see that Biography genre has the highest average rating, and Crime has the highest average votes. Cool, we hvae made some progress here, and we practice how to use `summarise`, `filter`, and `arrange`. Remember, `filter` and `arrange` both takes in multiple arguments.
+
+#### Is there a particular year where movies are doing great in terms of revenue?
+
+Is the movie indsutry making more money over the years, you might ask? Let's take a look:
+
+```{r}
+df.by.year = df %>%
+   select(year, revenue) %>%
+   group_by(year) %>%
+   summarise(cnt = n(), avg_revenue = mean(revenue)) %>%
+   arrange(desc(year))
+tail(df.by.year)
+library(ggplot2)
+library(scales)
+ggplot(df.by.year, aes(x = year, y = avg_revenue)) + geom_point() + geom_line() + xlab("year") + ylab("avg revenue") + scale_y_continuous(labels = comma) 
+```
+
+For ggplot2, I love `library(scales)` for formatting the axes. To learn more, you can check out this [man page](http://docs.ggplot2.org/current/scale_continuous.html). Coming back to the analysis, it seems the revenue flunctuates a lot, maybe because we didn't have enough data points for earlier decades?
+
+```{r}
+df.by.year.gap = df.by.year %>% filter(year %% 5 == 0)
+ggplot(df.by.year.gap, aes(x = factor(year), y = cnt)) + geom_bar(stat = "identity")
+```
+
+It does seem like before 1990, the number of movies in our dataset is a lot smaller. so to anser the question, it's better to look at post 1990s.
+
+```{r}
+ggplot(df.by.year %>% filter(year >= 1990), aes(x = year, y = avg_revenue)) + geom_point() + geom_line() + xlab("year") + ylab("avg revenue") + scale_y_continuous(labels = comma) 
+```
+
+This is pretty cool, now I can plot graphs easily if I need to do a simple filter, or a generic operations inline in the `ggplot` function! And hey, look at the time series, I think the movie industry is doing very well, the revenue increase from 50M in the 1990s to 80M in the 2010s! Up and to the Right!
