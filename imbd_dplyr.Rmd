@@ -155,3 +155,24 @@ ggplot(df.by.year %>% filter(year >= 1990), aes(x = year, y = avg_revenue)) + ge
 ```
 
 This is pretty cool, now I can plot graphs easily if I need to do a simple filter, or a generic operations inline in the `ggplot` function! And hey, look at the time series, I think the movie industry is doing very well, the revenue increase from 50M in the 1990s to 80M in the 2010s! Up and to the Right!
+
+#### Is there a particular director or movie star that tend to have great hits?
+
+Let us start with directors, since there is only one director columns, compared to 3 actor columns.
+
+```{r}
+df.by.director = df %>% 
+        group_by(director) %>%
+        summarise(cnt = n(),
+                  cnt_uu = count_distinct(name),
+                  avg_revenue = mean(revenue)) %>%
+        arrange(desc(cnt))    
+```
+
+Observation: ...
+
+Now, moving on to actors. The tricky part here is that we have three columns of actors, so in order to count how many movies each actor is in, as well as the average box office revenue, we will have to reshape this dataset. You can take a look at Hadley's [documentation](http://had.co.nz/reshape/introduction.pdf) or reference this [quick-R page](http://www.statmethods.net/management/reshape.html).
+
+```{r}
+library(reshape)
+```

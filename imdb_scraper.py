@@ -17,6 +17,7 @@ NUMBER_MOVIES_BY_VOTES = 228971
 NUMBER_MOVIES_PER_PAGE = 50
 NUMBER_PAGES_BY_VOTES = NUMBER_MOVIES_BY_VOTES / NUMBER_MOVIES_PER_PAGE
 ONE_MILLION = 1000000
+K = 1000
 
 # Explicit URL
 #######################################################################
@@ -32,12 +33,29 @@ def extract_dom(sort, start, url = 'http://www.imdb.com/search/title'):
 	print r.url
 	return web.Element(r.text)
 
-def extract_runtime(div):
-	runtime = div.content
-	if runtime:
+def extract_title(movie):
+	if movie.by_tag('a'):
+		return movie.by_tag('a')[0].content.encode('utf')
+	else: return 'NULL'
+
+def extract_year(movie):
+	if movie.by_tag('span.year_type'):
+		return movie.by_tag('span.year_type')[0].content.strip('(').strip(')')
+	else: return 'NULL'
+
+def extract_genres(movie):
+	if movie.by_tag('span.genre'):
+		genres = movie.by_tag('span.genre')[0].by_tag('a')
+		genres = [g.content for g in genres]
+		return genres
+	else: return None
+
+def extract_runtime(movie):
+	if movie.by_tag('span.runtime'):
+		runtime = movie.by_tag('span.runtime')[0].content
 		runtime = runtime.replace(' mins.', '')
 		return int(runtime)
-	else return 0
+	else: return 'NULL'
 
 def extract_rating(div):
 	rating_str = div.title
@@ -51,22 +69,32 @@ def extract_num_votes(div):
 	num_votes = num_votes_str[start_idx + 1 : end_idx]
 	return int(num_votes.strip('votes ').replace(',', ''))
 
-def extract_box_office_number(elem):
-	box_office_number_str = elem.content
-	box_office_number = float(re.sub('[$M]', '', box_office_number_str)) * ONE_MILLION
-	return box_office_number
+def extract_box_office_number(movie):
+	if movie.by_tag('td.sort_col'):
+		box_office_num_str = movie.by_tag('td.sort_col')[0].content
+		if 'M' in box_office_num_str:
+			box_office_num = float(re.sub('[$M]', '', box_office_num_str)) * ONE_MILLION
+		elif 'K' in box_office_num_str:
+			box_office_num = float(re.sub('[$K]', '', box_office_num_str)) * K
+		else: 
+			box_office_num = float(re.sub('[$]', '', box_office_num_str))
+		return box_office_num
+	else: return 'NULL'
 
-def extract_crew_names(elem):
-	people = elem.by_tag('a')
-	crews = [person.content.encode('utf') for person in people]
-	return crews
+def extract_crew_names(movie):
+	if movie.by_tag('span.credit'):
+		people = movie.by_tag('span.credit')[0].by_tag('a')
+		crews = [person.content.encode('utf') for person in people]
+		return crews + ['NULL'] * (4 - len(crews))
+	else: return ['NULL'] * 4
 
-def extract_certificate(elem):
-	if elem.by_tag('span'):
-		certificate = elem.by_tag('span')[0].title
-		return certificate
-	else:
-		return 'NULL'
+def extract_certificate(movie):
+	if movie.by_tag('span.certificate'):
+		elem = movie.by_tag('span.certificate')[0]
+		if elem.by_tag('span'):
+			return elem.by_tag('span')[0].title
+		else: return 'NULL'
+	else: return 'NULL'
 
 # Scrape movie data - sorted by num_votes
 #######################################################################
@@ -79,16 +107,17 @@ try:
 		print "Currenting processing page number: " + str(start) + "..."
 		dom = extract_dom(sort = 'num_votes', start = start, url = base_url)
 		for movie in dom.by_tag('td.title'):
-			title = movie.by_tag('a')[0].content.encode('utf')
-			year = movie.by_tag('span.year_type')[0].content.strip('(').strip(')')
-			genres = movie.by_tag('span.genre')[0].by_tag('a')
-			genres = [g.content for g in genres]
-			runtime = extract_runtime(movie.by_tag('span.runtime')[0])
-			rating_list = movie.by_tag('div.rating-list')[0]
-			# get rating
-			rating = extract_rating(rating_list)
-			# get votes
-			num_votes = extract_num_votes(rating_list)
+			title = extract_title(movie)
+			year = extract_year(movie)
+			genres = extract_genres(movie)
+			runtime = extract_runtime(movie)
+			if movie.by_tag('div.rating-list'):
+				rating_list = movie.by_tag('div.rating-list')[0]
+				# get rating
+				rating = extract_rating(rating_list)
+				# get votes
+				num_votes = extract_num_votes(rating_list)
+			else: rating, num_votes = 0, 0
 			# print the results
 			print title, year, genres[0], runtime, rating, num_votes
 			writer.writerow((title, year, genres[0], runtime, rating, num_votes))
@@ -105,10 +134,10 @@ try:
 		print bcolors.WARNING + "Currently processing box office page number: " + str(start) + "..." + bcolors.ENDC
 		dom = extract_dom(sort = 'boxoffice_gross_us', start = start, url = base_url)
 		for movie in dom.by_tag('tr.*detailed'):
-			box_office_number = extract_box_office_number(movie.by_tag('td.sort_col')[0])
+			box_office_number = extract_box_office_number(movie)
 			title = movie.by_tag('a')[0].title[:movie.by_tag('a')[0].title.rfind('(') - 1].encode('utf')
-			crews = extract_crew_names(movie.by_tag('span.credit')[0])
-			certificate = extract_certificate(movie.by_tag('span.certificate')[0])
+			crews = extract_crew_names(movie)
+			certificate = extract_certificate(movie)
 			print title, box_office_number, crews[0], crews[1], crews[2], crews[3], certificate
 			writer.writerow((title, box_office_number, crews[0], crews[1], crews[2], crews[3], certificate))
 finally:
