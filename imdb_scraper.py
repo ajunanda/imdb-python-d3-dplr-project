@@ -30,7 +30,7 @@ base_url = 'http://www.imdb.com/search/title'
 def extract_dom(sort, start, url = 'http://www.imdb.com/search/title'):
 	params = dict(sort = sort, at = 0, start = start, title_type = 'feature', year = '1950,2014')
 	r = requests.get(url, params = params)
-	print r.url
+	print bcolors.WARNING + r.url + bcolors.ENDC
 	return web.Element(r.text)
 
 def extract_title(movie):
@@ -48,7 +48,7 @@ def extract_genres(movie):
 		genres = movie.by_tag('span.genre')[0].by_tag('a')
 		genres = [g.content for g in genres]
 		return genres
-	else: return None
+	else: return ["NULL"]
 
 def extract_runtime(movie):
 	if movie.by_tag('span.runtime'):
@@ -104,7 +104,7 @@ writer = csv.writer(f)
 try:
 	# For some reason, IMDB doesn't return results > 100,000, so I am arbitrarily setting it to 50,000 for now
 	for start in range(1, 100 * 1000, NUMBER_MOVIES_PER_PAGE):
-		print "Currenting processing page number: " + str(start) + "..."
+		print bcolors.WARNING + "Currently processing page number: " + str(start) + "..." + bcolors.ENDC
 		dom = extract_dom(sort = 'num_votes', start = start, url = base_url)
 		for movie in dom.by_tag('td.title'):
 			title = extract_title(movie)
