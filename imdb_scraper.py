@@ -35,7 +35,7 @@ def extract_dom(sort, start, url = 'http://www.imdb.com/search/title'):
 
 def extract_title(movie):
 	if movie.by_tag('a'):
-		return movie.by_tag('a')[0].content.encode('utf')
+		return movie.by_tag('a')[0].content.encode('utf').replace(',', '')
 	else: return 'NULL'
 
 def extract_year(movie):
@@ -76,6 +76,8 @@ def extract_box_office_number(movie):
 			box_office_num = float(re.sub('[$M]', '', box_office_num_str)) * ONE_MILLION
 		elif 'K' in box_office_num_str:
 			box_office_num = float(re.sub('[$K]', '', box_office_num_str)) * K
+		elif '-' in box_office_num_str:
+			box_office_num = 0
 		else: 
 			box_office_num = float(re.sub('[$]', '', box_office_num_str))
 		return box_office_num
@@ -102,8 +104,8 @@ f = open('movie_data.csv', 'wb')
 writer = csv.writer(f)
 
 try:
-	# For some reason, IMDB doesn't return results > 100,000, so I am arbitrarily setting it to 50,000 for now
-	for start in range(1, 100 * 1000, NUMBER_MOVIES_PER_PAGE):
+	# For some reason, IMDB doesn't return results > 100,000, so I am arbitrarily setting it to 10,000 for now
+	for start in range(1, 100 * 100, NUMBER_MOVIES_PER_PAGE):
 		print bcolors.WARNING + "Currently processing page number: " + str(start) + "..." + bcolors.ENDC
 		dom = extract_dom(sort = 'num_votes', start = start, url = base_url)
 		for movie in dom.by_tag('td.title'):
@@ -130,7 +132,7 @@ f = open('movie_box_office.csv', 'wb')
 writer = csv.writer(f)
 
 try:
-	for start in range(1, 100 * 1000, NUMBER_MOVIES_PER_PAGE):
+	for start in range(1, 100 * 100, NUMBER_MOVIES_PER_PAGE):
 		print bcolors.WARNING + "Currently processing box office page number: " + str(start) + "..." + bcolors.ENDC
 		dom = extract_dom(sort = 'boxoffice_gross_us', start = start, url = base_url)
 		for movie in dom.by_tag('tr.*detailed'):
