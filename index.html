@@ -8,8 +8,13 @@
     <body>
         <script type="text/javascript">
 
+            // Define Parameters
+            var w = 10000;
+            var h = 500;
+            var barPadding = 1;
             var dataset;
 
+            // Process data using the callback function in the d3.csv asynchronous function
             d3.csv("data/d3_imdb_data.csv", function(error, data) {
                 
                 if (error) {
@@ -18,13 +23,37 @@
                     console.log(data);
                 }
 
-                dataset = data;
-                d3.select("body").selectAll("p")
-                  .data(dataset)
-                  .enter()
-                  .append("p")
-                  .text(function(d) {return d.name + ' ' + d.year + ' ' + d.genre + ' ' + d.runtime + ' ' + d.rating + ' ' + d.num_votes + ' ' + d.revenue + ' ' + d.director + ' ' + d.actor1 + ' ' + d.actor2 + ' ' + d.actor3 + ' ' + d.rated})
-                  .style('color', 'blue')
+                dataset = data.slice(1, 500);
+
+                var svg = d3.select("body")
+                            .append("svg")
+                            .attr("width", w)
+                            .attr("height", h);
+
+                svg.selectAll("rect")
+                   .data(dataset)
+                   .enter()
+                   .append("rect")
+                   .attr("x", function(d, i) {
+                      return i * (w / dataset.length);
+                   })
+                   .attr("y", function(d) {
+                      return h - parseFloat(d.runtime);
+                   })
+                   .attr("width", w / dataset.length - barPadding)
+                   .attr("height", function(d) {
+                      return parseFloat(d.runtime);
+                   })
+                   .attr("fill", function(d) {
+                      return "rgb(0, 0, " + (d.runtime % 256) + ")";
+                   });
+
+                // d3.select("body").selectAll("p")
+                //   .data(dataset)
+                //   .enter()
+                //   .append("p")
+                //   .text(function(d) {return d.name + ' ' + d.year + ' ' + d.genre + ' ' + d.runtime + ' ' + d.rating + ' ' + d.num_votes + ' ' + d.revenue + ' ' + d.director + ' ' + d.actor1 + ' ' + d.actor2 + ' ' + d.actor3 + ' ' + d.rated})
+                //   .style('color', 'blue')
                 
             });
         </script>
