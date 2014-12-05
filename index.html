@@ -34,19 +34,31 @@
                    .data(dataset)
                    .enter()
                    .append("rect")
-                   .attr("x", function(d, i) {
-                      return i * (w / dataset.length);
+                   .attr({
+                      x : function(d, i) { return i * (w / dataset.length); },
+                      y : function(d) { return h - parseFloat(d.runtime); },
+                      width : w / dataset.length - barPadding,
+                      height : function(d) { return parseFloat(d.runtime); },
+                      fill : function(d) { return "rgb(0, 0, " + (d.runtime % 256) + ")" }
                    })
-                   .attr("y", function(d) {
-                      return h - parseFloat(d.runtime);
+
+                svg.selectAll("text")
+                   .data(dataset)
+                   .enter()
+                   .append("text")
+                   .attr({
+                      x : function(d, i) { return i * (w / dataset.length); },
+                      y : function(d) { return h - parseFloat(d.runtime); }
+                      //text-anchor : middle,
+                      //fill : white
                    })
-                   .attr("width", w / dataset.length - barPadding)
-                   .attr("height", function(d) {
-                      return parseFloat(d.runtime);
+                   .text(function(d) { return d.name; })
+                   .attr("transform", function(d, i) { //http://stackoverflow.com/questions/11252753/rotate-x-axis-text-in-d3
+                      console.log("rotate(90 " + i * (w / dataset.length) + "," + (h - parseFloat(d.runtime)) + ")");
+                      return "rotate(90 " + i * (w / dataset.length) + "," + (h - parseFloat(d.runtime)) + ")";
                    })
-                   .attr("fill", function(d) {
-                      return "rgb(0, 0, " + (d.runtime % 256) + ")";
-                   });
+                   .attr("test-anchor", "middle")
+                   .attr("fill", "white")
 
                 // d3.select("body").selectAll("p")
                 //   .data(dataset)
