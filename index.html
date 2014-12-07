@@ -51,9 +51,11 @@
                 dataset = data.slice(0, 500);
                 
                 // setting up scales in d3
-                var xScale = d3.scale.linear()
-                               .domain([0, dataset.length])
-                               .range([axisHorizontalPadding + 10, w])
+
+                // Reference (how rangeBands works): https://github.com/mbostock/d3/wiki/Ordinal-Scales
+                var xScale = d3.scale.ordinal()
+                               .domain(d3.range(dataset.length))
+                               .rangeBands([axisHorizontalPadding + 10, w], 0.05);
 
                 var yScale = d3.scale.linear()
                                .domain([0, d3.max(dataset, function(d) { return parseFloat(d.runtime); })])
@@ -83,7 +85,7 @@
                    .attr({
                       x : function(d, i) { return xScale(i); },
                       y : function(d) { return yScale(d.runtime); },
-                      width : w / dataset.length - barPadding,
+                      width : xScale.rangeBand(),
                       height : function(d) { return h/2 - yScale(d.runtime); },
                       fill : function(d) { return genreScale(d.genre);}
                    })
@@ -93,17 +95,18 @@
                    .enter()
                    .append("text")
                    .attr({
-                      x : function(d, i) { return xScale(i) + (w / dataset.length) / 2; },
-                      y : function(d) { return h/2; }
+                      x : function(d, i) { return xScale(i) + xScale.rangeBand()/2; },
+                      y : function(d) { return (h/2 + 20); },
+                      dy: function() { return "0.35em"; }, // Resource (how to align text): http://www.d3noob.org/2014/02/attributes-in-d3js.html
+                      transform : function(d, i) {
+                          return "rotate(90 " + (xScale(i) + xScale.rangeBand()/2) + "," + (h/2 + 20) + ")";
+                      },
+                      fill : function() { return "black"; },
+                      "text-anchor" : function() { return "start"; }
                    })
                    .text(function(d, i) { return i + ': ' + d.name; })
-                   .attr("transform", function(d, i) { // Reference (how to rotate labels): http://stackoverflow.com/questions/11252753/rotate-x-axis-text-in-d3
-                      return "rotate(90 " + xScale(i) + "," + (h/2 + 5 * barPadding) + ")";
-                   })
-                   .attr("test-anchor", "middle")
-                   .attr("fill", "black")
 
-                //TOFIX: I am not sure why when I place axis in the end, then everythin will be rendered
+                //TO-INVESTIGATE: I am not sure why when I place axis in the end, then everythin will be rendered
                 // When I first redner the y axis, the first 10 movie names were not showing up properly
                 svg.append("g")
                    .attr("class", "axis")
