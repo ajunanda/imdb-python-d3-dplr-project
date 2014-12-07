@@ -10,7 +10,7 @@
 
             // Define Parameters
             var w = 10000;
-            var h = 500;
+            var h = 1000;
             var barPadding = 1;
             var dataset;
 
@@ -23,8 +23,18 @@
                     console.log(data);
                 }
 
-                dataset = data.slice(1, 500);
+                dataset = data.slice(0, 500);
 
+                // setting up scales in d3
+                var xScale = d3.scale.linear()
+                               .domain([0, dataset.length])
+                               .range([0, w])
+
+                var yScale = d3.scale.linear()
+                               .domain([0, d3.max(dataset, function(d) { return parseFloat(d.runtime); })])
+                               .range([0, h/2]);
+
+                // Setting up svg canvas
                 var svg = d3.select("body")
                             .append("svg")
                             .attr("width", w)
@@ -35,11 +45,11 @@
                    .enter()
                    .append("rect")
                    .attr({
-                      x : function(d, i) { return i * (w / dataset.length); },
-                      y : function(d) { return h - parseFloat(d.runtime); },
+                      x : function(d, i) { return xScale(i); },
+                      y : function(d) { return h/2 - yScale(d.runtime); },
                       width : w / dataset.length - barPadding,
-                      height : function(d) { return parseFloat(d.runtime); },
-                      fill : function(d) { return "rgb(0, 0, " + (d.runtime % 256) + ")" }
+                      height : function(d) { return yScale(d.runtime); },
+                      fill : function(d) { return "rgb(0, 0, " + (d.runtime % 256) + ")"; }
                    })
 
                 svg.selectAll("text")
@@ -47,26 +57,19 @@
                    .enter()
                    .append("text")
                    .attr({
-                      x : function(d, i) { return i * (w / dataset.length); },
-                      y : function(d) { return h - parseFloat(d.runtime); }
+                      x : function(d, i) { return xScale(i) + (w / dataset.length) / 2; },
+                      y : function(d) { return h/2; }
                       //text-anchor : middle,
                       //fill : white
                    })
                    .text(function(d) { return d.name; })
                    .attr("transform", function(d, i) { //http://stackoverflow.com/questions/11252753/rotate-x-axis-text-in-d3
                       console.log("rotate(90 " + i * (w / dataset.length) + "," + (h - parseFloat(d.runtime)) + ")");
-                      return "rotate(90 " + i * (w / dataset.length) + "," + (h - parseFloat(d.runtime)) + ")";
+                      return "rotate(90 " + xScale(i) + "," + (h/2 + 5 * barPadding) + ")";
                    })
                    .attr("test-anchor", "middle")
-                   .attr("fill", "white")
+                   .attr("fill", "black")
 
-                // d3.select("body").selectAll("p")
-                //   .data(dataset)
-                //   .enter()
-                //   .append("p")
-                //   .text(function(d) {return d.name + ' ' + d.year + ' ' + d.genre + ' ' + d.runtime + ' ' + d.rating + ' ' + d.num_votes + ' ' + d.revenue + ' ' + d.director + ' ' + d.actor1 + ' ' + d.actor2 + ' ' + d.actor3 + ' ' + d.rated})
-                //   .style('color', 'blue')
-                
             });
         </script>
     </body>
