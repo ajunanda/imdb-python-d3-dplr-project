@@ -4,6 +4,9 @@
         <meta charset="utf-8">
         <title>IMDB D3 Index Page</title>
         <script type="text/javascript" src="d3/d3.js"></script>
+        <!-- Reference: (colorbrewer javascript file) https://github.com/mbostock/d3/blob/master/lib/colorbrewer/colorbrewer.js-->
+        <!-- Reference: (how to include the colorbrewer.js file in a HTML file) http://bl.ocks.org/mbostock/5577023-->
+        <script src="http://d3js.org/colorbrewer.v1.min.js"></script>
     </head>
     <body>
         <script type="text/javascript">
@@ -13,6 +16,11 @@
             var h = 1000;
             var barPadding = 1;
             var dataset;
+
+            function onlyUnique(value, index, self) {
+                // Reference (how to define a unique function): http://stackoverflow.com/questions/1960473/unique-values-in-an-array 
+                return self.indexOf(value) === index;
+            }
 
             // Process data using the callback function in the d3.csv asynchronous function
             d3.csv("data/d3_imdb_data.csv", function(error, data) {
@@ -34,6 +42,11 @@
                                .domain([0, d3.max(dataset, function(d) { return parseFloat(d.runtime); })])
                                .range([0, h/2]);
 
+                // Reference (how to create a color scale): https://github.com/mbostock/d3/wiki/Ordinal-Scales
+                var genreScale = d3.scale.ordinal()
+                                   .domain(dataset.map(function(d) {return d.genre;}).filter(onlyUnique))
+                                   .range(colorbrewer.Set3[12])
+
                 // Setting up svg canvas
                 var svg = d3.select("body")
                             .append("svg")
@@ -49,7 +62,8 @@
                       y : function(d) { return h/2 - yScale(d.runtime); },
                       width : w / dataset.length - barPadding,
                       height : function(d) { return yScale(d.runtime); },
-                      fill : function(d) { return "rgb(0, 0, " + (d.runtime % 256) + ")"; }
+                      //fill : function(d) { return "rgb(0, 0, " + (d.runtime % 256) + ")"; }
+                      fill : function(d) { return genreScale(d.genre);}
                    })
 
                 svg.selectAll("text")
@@ -59,11 +73,9 @@
                    .attr({
                       x : function(d, i) { return xScale(i) + (w / dataset.length) / 2; },
                       y : function(d) { return h/2; }
-                      //text-anchor : middle,
-                      //fill : white
                    })
                    .text(function(d) { return d.name; })
-                   .attr("transform", function(d, i) { //http://stackoverflow.com/questions/11252753/rotate-x-axis-text-in-d3
+                   .attr("transform", function(d, i) { // Reference (how to rotate labels): http://stackoverflow.com/questions/11252753/rotate-x-axis-text-in-d3
                       console.log("rotate(90 " + i * (w / dataset.length) + "," + (h - parseFloat(d.runtime)) + ")");
                       return "rotate(90 " + xScale(i) + "," + (h/2 + 5 * barPadding) + ")";
                    })
