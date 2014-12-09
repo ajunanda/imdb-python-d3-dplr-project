@@ -48,7 +48,7 @@
                     //console.log(data);
                 }
 
-                dataset = data.slice(0, 500);
+                dataset = data.slice(0, 100);
                 
                 // setting up scales in d3
 
@@ -78,6 +78,40 @@
                             .attr("width", w)
                             .attr("height", h);
 
+                // Create the sortBars call back function
+                var sortBars = function() {
+                    svg.selectAll("rect")
+                       .sort(function (a, b) {
+                          return d3.descending(parseFloat(a.runtime), parseFloat(b.runtime));
+                       })
+                       .transition()
+                       .delay(function(d, i) {
+                          return i * 5;
+                       })
+                       .duration(500)
+                       .attr("x", function(d, i) {
+                          return xScale(i);
+                       });
+                };
+
+                //TOFIX: Create the sortLabels call back function, it DIDN'T WORK
+                var sortLabels = function() {
+                    svg.selectAll("text")
+                       .sort(function (a, b) {
+                          return d3.descending(parseFloat(a.runtime), parseFloat(b.runtime));
+                       })
+                       .transition()
+                       .duration(2000)
+                       .attr({
+                          x : function(d, i) { return xScale(i); },
+                          y : function(d) { return (h/2 + 20); },
+                          dy: function() { return "0.35em"; }, // Resource (how to align text): http://www.d3noob.org/2014/02/attributes-in-d3js.html
+                          transform : function(d, i) {
+                            return "rotate(90 " + xScale(i) + "," + (h/2 + 20) + ")"; },
+                          text : function(d, i) { return d.name; }
+                       });
+                };
+
                 svg.selectAll("rect")
                    .data(dataset)
                    .enter()
@@ -88,6 +122,10 @@
                       width : xScale.rangeBand(),
                       height : function(d) { return h/2 - yScale(d.runtime); },
                       fill : function(d) { return genreScale(d.genre);}
+                   })
+                   .on("click", function() {
+                      sortBars();
+                      sortLabels();
                    })
 
                 svg.selectAll("text")
