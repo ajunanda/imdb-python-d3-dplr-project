@@ -27,6 +27,17 @@
             -webkit-transition: all 0.3s;
             transition: all 0.3s;
           }
+
+          div.tooltip {
+            position: absolute;
+            text-align: center;
+            width: 300px;
+            height: 33px;
+            padding: 8px;
+            font: 10px sans-serif;
+            pointer-events: none;
+          }
+
         </style>
 
     </head>
@@ -119,6 +130,29 @@
                           text : function(d, i) { return d.name; }
                        });
                 };
+                // Create the mousemove callback function to display movie thumbnail
+                function mouseover() {
+                  div.transition()
+                      .duration(500)
+                      .style("opacity", 1);
+                }
+
+                // function mousemove() {
+                //   div
+                //    .html("<span style='color:red'><h1>Tombouctou Region</h1><br><ahref='http://en.wikipedia.org/wiki/Tombouctou_Region'><img src='http://upload.wikimedia.org/wikipedia/commons/b/b3/Mali_Tombouctou.png'></ahref></span> <span style='color:blue'><h2>Mali !!!!!!! </h2></span>")
+                //       .style("left", (d3.event.pageX - 34) + "px")
+                //       .style("top", (d3.event.pageY - 12) + "px");
+                // }
+
+                function mouseout() {
+                  div.transition()
+                      .duration(500)
+                      .style("opacity", 1e-6);
+                }
+
+                var div = d3.select("body").append("div")
+                            .attr("class", "tooltip")
+                            .style("opacity", 1e-6);
 
                 svg.selectAll("rect")
                    .data(dataset)
@@ -135,17 +169,15 @@
                       sortBars();
                       //sortLabels();
                    })
-                   .on("mouseover", function() {
-                      d3.select(this)
-                      .attr("fill", "gray");
+                   .on("mouseover", mouseover)
+                   .on("mousemove", function(d) {
+                        div
+                          .html("<span><h3>" + d.name + "</h3><br><h3>" + d.genre + "</h3><br><ahref='http://en.wikipedia.org/wiki/Tombouctou_Region'><img src='http://upload.wikimedia.org/wikipedia/commons/b/b3/Mali_Tombouctou.png'></ahref></span>")
+                          .style("left", (d3.event.pageX - 34) + "px")
+                          .style("top", (d3.event.pageY - 12) + "px");
                    })
-                   .on("mouseout", function (d) {
-                      d3.select(this)
-                      .transition()
-                      .duration(250)
-                      .attr("fill", function() { return genreScale(d.genre);});
-                   });
-                   //TO-INVESTIGATE: If you have these mouseover + mouseout transition, and at the same time a sort transition. THe newer transition (hover) will often interrupte the ongoing transition (sort), and it might look buggy. A better solution is to use changes in CSS so d3 doesn't worry about these smaller transitions.
+                   .on("mouseout", mouseout); 
+                   // REFERENCE (how to display an image in a div on mousemove): http://bl.ocks.org/jarobertson/1483052
 
                 svg.selectAll("text")
                    .data(dataset)

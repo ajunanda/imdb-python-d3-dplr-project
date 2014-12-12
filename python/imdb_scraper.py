@@ -140,10 +140,16 @@ try:
 			title, img_src = extract_images(movie)
 			print bcolors.WARNING + "extracting images for " + title + " ..." + bcolors.ENDC
 			if title != 'NULL' and img_src != 'NULL':
-				response = requests.get(img_src, stream = True)
-				with open('./../data/imgs/' + title + '.png', 'wb') as out_file:
-				    shutil.copyfileobj(response.raw, out_file)
-				del response
+				print "title: " + title + "   Image: " + img_src + " ..." + bcolors.ENDC
+				# TODO: I need to write out all the img_src so I can called them in D3
+
+				########################################################
+				### Only when you need to save the images themselves ###
+				########################################################
+				# response = requests.get(img_src, stream = True)
+				# with open('./../data/imgs/' + title + '.png', 'wb') as out_file:
+				#     shutil.copyfileobj(response.raw, out_file)
+				# del response
 finally:
 	f.close()
 
