@@ -25,7 +25,7 @@ Ok, let's now load the data using the usual read.csv functiion (I didn't use rea
 ```{r}
 df.basic = read.csv(file = "./../data/movie_data_basic.csv", sep = ",", header = FALSE)
 #df.basic = read.csv(file = "movie_data.csv", sep = ",", header = FALSE)
-colnames(df.basic) = c("name", "year", "genre", "runtime", "rating", "num_votes")
+colnames(df.basic) = c("name", "year", "genre", "runtime", "rating", "num_votes", "img_src")
 head(df.basic, 5)
 
 df.more = read.csv(file = "./../data/movie_data_more.csv", sep = ",", header = FALSE)

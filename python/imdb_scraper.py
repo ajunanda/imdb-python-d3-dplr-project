@@ -103,11 +103,9 @@ def extract_images(movie):
 	if movie.by_tag('img'):
 		movie = movie.by_tag('img')[0]
 		attr_dict = movie.attr
-		title = attr_dict['title']
-		title = title[0:title.find("(")-1].replace(',', '').replace('/', ' ')
-		img = attr_dict['src']
-		return (title, img)
-	else: return ('NULL', 'NULL')
+		img_src = attr_dict['src']
+		return img_src
+	else: return 'NULL'
 
 
 # Scrape movie data - sorted by num_votes
@@ -118,38 +116,39 @@ writer = csv.writer(f)
 try:
 	# For some reason, IMDB doesn't return results > 100,000, so I am arbitrarily setting it to 10,000 for now
 	for start in range(1, 100 * 100, NUMBER_MOVIES_PER_PAGE):
+
 		print bcolors.WARNING + "Currently processing page number: " + str(start) + " ..." + bcolors.ENDC
 		dom = extract_dom(sort = 'num_votes', start = start, url = base_url)
-		for movie in dom.by_tag('td.title'):
-			title = extract_title(movie)
-			year = extract_year(movie)
-			genres = extract_genres(movie)
-			runtime = extract_runtime(movie)
-			if movie.by_tag('div.rating-list'):
-				rating_list = movie.by_tag('div.rating-list')[0]
-				# get rating
+		
+		for movie in dom.by_tag('tr.*detailed'):
+			
+			# Extract title, year, genre, runtime, rating, num_votes
+			tr_title = movie.by_tag('td.title')[0]
+			title = extract_title(tr_title)
+			year = extract_year(tr_title)
+			genres = extract_genres(tr_title)
+			runtime = extract_runtime(tr_title)
+			
+			if tr_title.by_tag('div.rating-list'):
+				rating_list = tr_title.by_tag('div.rating-list')[0]
 				rating = extract_rating(rating_list)
-				# get votes
 				num_votes = extract_num_votes(rating_list)
 			else: rating, num_votes = 0, 0
-			# print the results
-			print title, year, genres[0], runtime, rating, num_votes
-			writer.writerow((title, year, genres[0], runtime, rating, num_votes))
-		# Add the ability to download thumbnails of different movies	
-		for movie in dom.by_tag('td.image'):
-			title, img_src = extract_images(movie)
-			print bcolors.WARNING + "extracting images for " + title + " ..." + bcolors.ENDC
-			if title != 'NULL' and img_src != 'NULL':
-				print "title: " + title + "   Image: " + img_src + " ..." + bcolors.ENDC
-				# TODO: I need to write out all the img_src so I can called them in D3
-
-				########################################################
-				### Only when you need to save the images themselves ###
-				########################################################
-				# response = requests.get(img_src, stream = True)
-				# with open('./../data/imgs/' + title + '.png', 'wb') as out_file:
-				#     shutil.copyfileobj(response.raw, out_file)
-				# del response
+			
+			# Extract img_src separately since it's in td.image
+			td_image = movie.by_tag('td.image')[0];
+			img_src = extract_images(movie) 
+			
+			print title, year, genres[0], runtime, rating, num_votes, img_src + " ..." + bcolors.OKBLUE
+			writer.writerow((title, year, genres[0], runtime, rating, num_votes, img_src))
+		
+			########################################################
+			### Only when you need to save the images themselves ###
+			########################################################
+			# response = requests.get(img_src, stream = True)
+			# with open('./../data/imgs/' + title + '.png', 'wb') as out_file:
+			#     shutil.copyfileobj(response.raw, out_file)
+			# del response
 finally:
 	f.close()
 
@@ -160,13 +159,17 @@ writer = csv.writer(f)
 
 try:
 	for start in range(1, 100 * 100, NUMBER_MOVIES_PER_PAGE):
+
 		print bcolors.WARNING + "Currently processing box office page number: " + str(start) + "..." + bcolors.ENDC
 		dom = extract_dom(sort = 'boxoffice_gross_us', start = start, url = base_url)
+		
 		for movie in dom.by_tag('tr.*detailed'):
+			
 			box_office_number = extract_box_office_number(movie)
 			title = movie.by_tag('a')[0].title[:movie.by_tag('a')[0].title.rfind('(') - 1].encode('utf')
 			crews = extract_crew_names(movie)
 			certificate = extract_certificate(movie)
+			
 			print title, box_office_number, crews[0], crews[1], crews[2], crews[3], certificate
 			writer.writerow((title, box_office_number, crews[0], crews[1], crews[2], crews[3], certificate))
 finally:
