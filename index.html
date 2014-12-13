@@ -58,7 +58,7 @@
             }
 
             // Process data using the callback function in the d3.csv asynchronous function
-            d3.csv("data/d3_imdb_data.csv", function(error, data) {
+            d3.tsv("data/d3_imdb_data.tsv", function(error, data) {
                 
                 if (error) {
                     console.log(error);
@@ -137,13 +137,6 @@
                       .style("opacity", 1);
                 }
 
-                // function mousemove() {
-                //   div
-                //    .html("<span style='color:red'><h1>Tombouctou Region</h1><br><ahref='http://en.wikipedia.org/wiki/Tombouctou_Region'><img src='http://upload.wikimedia.org/wikipedia/commons/b/b3/Mali_Tombouctou.png'></ahref></span> <span style='color:blue'><h2>Mali !!!!!!! </h2></span>")
-                //       .style("left", (d3.event.pageX - 34) + "px")
-                //       .style("top", (d3.event.pageY - 12) + "px");
-                // }
-
                 function mouseout() {
                   div.transition()
                       .duration(500)
@@ -171,8 +164,16 @@
                    })
                    .on("mouseover", mouseover)
                    .on("mousemove", function(d) {
+                        // TO_INVESTIGATE: (why image quality degraded): http://www.thesitewizard.com/archive/bandwidththeft.shtml | http://stackoverflow.com/questions/3154562/remote-images-displaying-only-sometimes
                         div
-                          .html("<span><h3>" + d.name + "</h3><br><h3>" + d.genre + "</h3><br><ahref='http://en.wikipedia.org/wiki/Tombouctou_Region'><img src='http://upload.wikimedia.org/wikipedia/commons/b/b3/Mali_Tombouctou.png'></ahref></span>")
+                          .html("<span><h3>" + d.name + "</h3>" +
+                                "<h3>" + d.genre + "</h3>" +
+                                "<h3>" + "Director: " + d.director + "</h3>" + 
+                                "<h3>" + "Lead Actor: " + d.actor1 + "</h3>" +
+                                "<h3>" + "Box Office Revenue: " + d.revenue + "</h3>" +
+                                "<h3>" + "Number of Votes: " + d.num_votes + "</h3>" +
+                                "<h3>" + "Rating: " + d.rating + "</h3>" +
+                                "<img src='" + d.img_src + "' height = '200' width = '155'</span>")
                           .style("left", (d3.event.pageX - 34) + "px")
                           .style("top", (d3.event.pageY - 12) + "px");
                    })
