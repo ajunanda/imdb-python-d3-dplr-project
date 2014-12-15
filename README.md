@@ -42,6 +42,9 @@ A couple of lessons I learned along the way:
 	* [Mechanize]
 	* [lxml]
 
+###### MISC
+* [How to edit an incorrect commit message in Git]
+
 [lab 4]:http://nbviewer.ipython.org/github/cs109/content/blob/master/lec_04_scraping.ipynb
 [lab 4 munging]: http://nbviewer.ipython.org/github/cs109/content/blob/master/lec_04_wrangling.ipynb
 [Executing python script in sublime]: http://stackoverflow.com/questions/8551735/how-do-i-run-python-code-from-sublime-text-2
@@ -52,3 +55,4 @@ A couple of lessons I learned along the way:
 [Requests]: http://docs.python-requests.org/en/latest/
 [Mechanize]: http://wwwsearch.sourceforge.net/mechanize/
 [lxml]: http://lxml.de/
+[How to edit an incorrect commit message in Git]

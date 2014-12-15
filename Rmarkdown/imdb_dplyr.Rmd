@@ -42,7 +42,7 @@ The reason that I have two separate dataset is because I wasn't able to find a p
 df.basic$name = tolower(df.basic$name)
 df.more$name = tolower(df.more$name)
 df.joined = inner_join(df.basic, df.more, by = 'name')
-#write.table(df.joined, file = "d3_imdb_data.csv", quote = FALSE, sep = ",", row.names = FALSE, col.names = TRUE)
+write.table(df.joined, file = "d3_imdb_data.tsv", quote = FALSE, sep = "\t", row.names = FALSE, col.names = TRUE)
 dim(df.joined)
 head(df.joined)
 ```
