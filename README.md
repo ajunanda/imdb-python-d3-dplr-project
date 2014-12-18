@@ -42,6 +42,11 @@ A couple of lessons I learned along the way:
 	* [Mechanize]
 	* [lxml]
 
+###### Twitter Bootstrap
+* [Twitter Bootstrap Examples]
+* [Getting Started]
+* [Youtube Videos]
+
 ###### MISC
 * [How to edit an incorrect commit message in Git]
 
@@ -56,3 +61,7 @@ A couple of lessons I learned along the way:
 [Mechanize]: http://wwwsearch.sourceforge.net/mechanize/
 [lxml]: http://lxml.de/
 [How to edit an incorrect commit message in Git]
+[Fix virtualenv]: http://mikeboers.com/blog/2014/12/05/repairing-python-virtual-environments
+[Twitter Bootstrap Examples]: http://www.tutorialrepublic.com/twitter-bootstrap-examples.php
+[Getting Started]: http://getbootstrap.com/2.3.2/getting-started.html
+[Youtube Video]: https://www.youtube.com/watch?v=beUUBc-ueAM&list=PLKlA1QwYBcmcEUUBSmkl8_kgwn-_zuy-W&index=10

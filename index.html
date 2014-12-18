@@ -8,10 +8,14 @@
         <!-- Reference: (how to include the colorbrewer.js file in a HTML file) http://bl.ocks.org/mbostock/5577023-->
         <script src="http://d3js.org/colorbrewer.v1.min.js"></script>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <!-- <link rel="stylesheet" href="css/bootstrap.min.css"> -->
         <link rel="stylesheet" href="css/style.css">
         <script src="//code.jquery.com/jquery-1.10.2.js"></script>
         <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 
         <style type="text/css">
 
@@ -185,13 +189,13 @@
                    .on("mousemove", function(d) {
                         // TO_INVESTIGATE: (why image quality degraded): http://www.thesitewizard.com/archive/bandwidththeft.shtml | http://stackoverflow.com/questions/3154562/remote-images-displaying-only-sometimes
                         div
-                          .html("<span><h3>" + d.name + "</h3>" +
-                                "<h3>" + d.genre + "</h3>" +
-                                "<h3>" + "Director: " + d.director + "</h3>" + 
-                                "<h3>" + "Lead Actor: " + d.actor1 + "</h3>" +
-                                "<h3>" + "Box Office Revenue: " + d.revenue + "</h3>" +
-                                "<h3>" + "Number of Votes: " + d.num_votes + "</h3>" +
-                                "<h3>" + "Rating: " + d.rating + "</h3>" +
+                          .html("<span><h5>" + d.name + "</h5>" +
+                                "<h5>" + d.genre + "</h5>" +
+                                "<h5>" + "Director: " + d.director + "</h5>" + 
+                                "<h5>" + "Lead Actor: " + d.actor1 + "</h5>" +
+                                "<h5>" + "Box Office Revenue: " + d.revenue + "</h5>" +
+                                "<h5>" + "Number of Votes: " + d.num_votes + "</h5>" +
+                                "<h5>" + "Rating: " + d.rating + "</h5>" +
                                 "<img src='" + d.img_src + "' height = '200' width = '155'</span>")
                           .style("left", (d3.event.pageX - 34) + "px")
                           .style("top", (d3.event.pageY - 12) + "px");
@@ -364,9 +368,12 @@
         <!-- Adding radio buttons -->
         <form>
           <div id="radio" style="position: fixed; top: 550px; left: 150px;">
-            <input type="radio" id="byVotes" class='switch' name="radio"><label for="byVotes">By Votes</label>
+            <button type="button" id="byVotes" class="btn btn-primary switch" name="radio"><label for="byVotes">By Votes</button>
+            <button type="button" id="byRuntime" class="btn btn-primary switch" name="radio"><label for="byRuntime">By Runtime</button>
+            <button type="button" id="byRevenue" class="btn btn-primary switch" name="radio"><label for="byRevenue">By Revenue</button>
+            <!-- <input type="radio" id="byVotes" class='switch' name="radio"><label for="byVotes">By Votes</label>
             <input type="radio" id="byRuntime" class='switch' name="radio" checked="checked"><label for="byRuntime">By Runtime</label>
-            <input type="radio" id="byRevenue" class='switch' name="radio"><label for="byRevenue">By Revenue</label>
+            <input type="radio" id="byRevenue" class='switch' name="radio"><label for="byRevenue">By Revenue</label> -->
           </div>
         </form>
 
